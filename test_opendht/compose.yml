@@ -1,7 +1,7 @@
 ---
 services:
   dht:
-    build: ../opendht_docker
+    build: ../opendht
     ports:
       - 4222:4222/udp
     command: ["dhtnode", "-p", "4222", "-D", "-v", "-s"]
