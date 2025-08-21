@@ -2,7 +2,6 @@
 services:
   dht:
     build: ../opendht
-    ports:
-      - 4222:4222/udp
-    command: ["dhtnode", "-p", "4222", "-D", "-v", "-s"]
+    network_mode: host
+    command: ["dhtnode", "-p", "4222", "--proxyserver", "8000", "-D", "-v", "-s"]
     restart: unless-stopped
