@@ -1,0 +1,3 @@
+[submodule "opendht"]
+	path = opendht
+	url = https://github.com/josephlukefahr/opendht
