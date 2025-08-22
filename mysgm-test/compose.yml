@@ -3,9 +3,9 @@ services:
   builder:
     image: rust:1.89
     command: ["cargo", "build", "--release"]
-    working_dir: /usr/src/mysgm
+    working_dir: /usr/local/src/mysgm/mysgm
     volumes:
-      - ../mysgm:/usr/local/src/mysgm
+      - ..:/usr/local/src/mysgm
   dht:
     build: ../opendht
     network_mode: host
