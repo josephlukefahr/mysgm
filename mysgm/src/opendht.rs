@@ -44,7 +44,8 @@ impl OpenDhtRestAdapter {
             self.proxy_address, self.proxy_port, key
         );
         let request_payload = serde_json::to_string(&serde_json::json!({
-            "data": STANDARD.encode(value)
+            "data": STANDARD.encode(value),
+            "permanent": "true"
         }))
         .unwrap();
         let _response = ReqwestClient::new()

@@ -15,6 +15,7 @@ use openmls::versions::ProtocolVersion;
 use openmls_rust_crypto::RustCrypto;
 use openmls_traits::{OpenMlsProvider, random::OpenMlsRand, types::Ciphersuite};
 use serde_json::{from_str as json_decode, to_string as json_encode};
+use std::io::{BufRead, stdin};
 
 /// Simple CLI for key generation
 #[derive(Parser, Debug)]
@@ -30,6 +31,12 @@ struct CliArgs {
     /// Optional identifier to use as group id
     #[arg(long, default_value = "group")]
     gid: String,
+    /// Optional label for group export
+    #[arg(long, default_value = "export")]
+    export_label: String,
+    /// Optional length for group export
+    #[arg(long, default_value_t = 32)]
+    export_length: usize,
 }
 
 fn main() {
@@ -108,8 +115,7 @@ fn main() {
             }
             Err(e) => {
                 log::error!("Failed to get key package: {e}");
-                log::warn!("Continuing to fetch more key packages");
-                agent.increment_key_package_counter().unwrap();
+                break;
             }
             Ok(Some(kp_bytes)) => {
                 log::info!("Received value: {}", hex::encode(&kp_bytes));
@@ -132,6 +138,35 @@ fn main() {
         Some(cmd) => {
             log::info!("Command to process: {cmd}");
             match cmd.as_str() {
+                "group_export" => {
+                    let mut handle = stdin().lock();
+                    log::debug!("Reading lines from stdin as groups for export");
+                    for line in handle.lines() {
+                        match line {
+                            Ok(l) => {
+                                log::info!("Group to use for export: {l}");
+                                log::info!("Label to use for export: {}", args.export_label);
+                                log::info!("Length to use for export: {}", args.export_length);
+                                match agent.export_from_group(
+                                    &l,
+                                    &args.export_label,
+                                    args.export_length,
+                                ) {
+                                    Ok(exported) => {
+                                        println!("{}", hex::encode(&exported));
+                                    }
+                                    Err(e) => {
+                                        log::error!("Failed to export secret: {e}");
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                log::error!("Error reading line: {e}");
+                                break;
+                            }
+                        }
+                    }
+                }
                 "list_groups" => {
                     for gid in agent.groups() {
                         println!("{gid}");

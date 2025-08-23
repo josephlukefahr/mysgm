@@ -80,6 +80,17 @@ impl MySgmAgent {
             .map(|g| g.as_ref())
             .collect()
     }
+    pub fn export_from_group(
+        &self,
+        gid_str: &str,
+        label: &str,
+        length: usize,
+    ) -> Result<Vec<u8>, Box<dyn core::error::Error>> {
+        let gid = GroupId::from_slice(gid_str.as_bytes());
+        Ok(MlsGroup::load(self.provider.storage(), &gid)?
+            .ok_or("Group not found")?
+            .export_secret(&self.provider, label, &[], length)?)
+    }
     pub fn create_group(&mut self, gid_str: &str) -> Result<(), Box<dyn core::error::Error>> {
         let gid = GroupId::from_slice(gid_str.as_bytes());
         let _ = MlsGroup::new_with_group_id(

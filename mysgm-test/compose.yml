@@ -4,9 +4,11 @@ services:
     build: ..
     network_mode: host
     volumes:
-      - ./tmp:/tmp
+      - ./mysgm:/tmp
   dht:
     build: ..
     network_mode: host
-    command: ["dhtnode", "-p", "4222", "--proxyserver", "8000", "-D", "-v", "-s"]
+    command: ["dhtnode", "-p", "4222", "--proxyserver", "8000", "-D", "-v", "-s", "-f", "/tmp/dht"]
     restart: unless-stopped
+    volumes:
+      - ./opendht:/tmp
