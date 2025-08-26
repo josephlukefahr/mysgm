@@ -11,33 +11,33 @@ use std::{collections::HashMap, sync::RwLock};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MySgmState {
-    credential: String,
+    pid: String,
     signature_key_pair: SignatureKeyPair,
     mls_version: ProtocolVersion,
     my_ciphersuite: Ciphersuite,
-    welcome_counter: usize,
-    key_package_log: Vec<Option<KeyPackage>>,
-    agent_ids: HashMap<String, usize>,
-    group_ids: Vec<String>,
+    welcome_counter: u64,
+    key_package_counter: u64,
+    key_packages: HashMap<String, KeyPackage>,
+    gids: Vec<String>,
     openmls_values: OpenMlsKeyValueStore,
 }
 
 impl MySgmState {
     pub fn new(
-        credential: String,
+        pid: String,
         signature_key_pair: SignatureKeyPair,
         my_ciphersuite: Ciphersuite,
         mls_version: ProtocolVersion,
     ) -> Self {
         Self {
-            credential,
+            pid,
             signature_key_pair,
             my_ciphersuite,
             mls_version,
             welcome_counter: 0,
-            key_package_log: Vec::new(),
-            agent_ids: HashMap::new(),
-            group_ids: Vec::new(),
+            key_package_counter: 0,
+            key_packages: HashMap::new(),
+            gids: Vec::new(),
             openmls_values: Default::default(),
         }
     }
@@ -47,8 +47,8 @@ impl MySgmState {
     pub fn mls_version(&self) -> ProtocolVersion {
         self.mls_version
     }
-    pub fn credential_str(&self) -> &str {
-        &self.credential
+    pub fn my_pid(&self) -> &str {
+        &self.pid
     }
     pub fn signature_key_pair(&self) -> &SignatureKeyPair {
         &self.signature_key_pair
@@ -56,33 +56,35 @@ impl MySgmState {
     pub fn openmls_values(&self) -> &OpenMlsKeyValueStore {
         &self.openmls_values
     }
-    pub fn key_package_log(&self) -> &Vec<Option<KeyPackage>> {
-        &self.key_package_log
+    pub fn key_package(&self, pid: &str) -> Option<&KeyPackage> {
+        self.key_packages.get(pid)
     }
-    pub fn log_key_package(&mut self, key_package_opt: Option<KeyPackage>) -> usize {
-        self.key_package_log.push(key_package_opt);
-        self.key_package_log.len() - 1
+    pub fn set_key_package(&mut self, pid: &str, key_package: KeyPackage) {
+        self.key_packages.insert(pid.to_string(), key_package);
     }
-    pub fn get_key_package_log_index(&self, agent_id: &str) -> Option<usize> {
-        self.agent_ids.get(agent_id).copied()
+    pub fn pids(&self) -> Vec<String> {
+        self.key_packages.keys().cloned().collect()
     }
-    pub fn set_key_package_log_index(&mut self, agent_id: &str, log_index: usize) {
-        self.agent_ids.insert(agent_id.to_string(), log_index);
+    pub fn gids(&self) -> Vec<String> {
+        self.gids.clone()
     }
-    pub fn agent_ids(&self) -> Vec<String> {
-        self.agent_ids.keys().cloned().collect()
+    pub fn add_gid(&mut self, gid: String) {
+        self.gids.push(gid);
     }
-    pub fn group_ids(&self) -> Vec<String> {
-        self.group_ids.clone()
+    pub fn remove_gid(&mut self, gid: &str) {
+        self.gids.retain(|g| g != gid);
     }
-    pub fn add_group_id(&mut self, group_id: String) {
-        self.group_ids.push(group_id);
-    }
-    pub fn welcome_counter(&self) -> usize {
+    pub fn welcome_counter(&self) -> u64 {
         self.welcome_counter
     }
     pub fn increment_welcome_counter(&mut self) {
         self.welcome_counter += 1;
+    }
+    pub fn key_package_counter(&self) -> u64 {
+        self.key_package_counter
+    }
+    pub fn increment_key_package_counter(&mut self) {
+        self.key_package_counter += 1;
     }
 }
 
