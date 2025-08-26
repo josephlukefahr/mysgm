@@ -4,7 +4,7 @@ use openmls_traits::{
     OpenMlsProvider,
     crypto::OpenMlsCrypto,
     signatures::{Signer, SignerError},
-    types::{CryptoError, SignatureScheme},
+    types::SignatureScheme,
 };
 
 #[derive(Debug)]

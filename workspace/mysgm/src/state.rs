@@ -15,10 +15,8 @@ pub struct MySgmState {
     signature_key_pair: SignatureKeyPair,
     mls_version: ProtocolVersion,
     my_ciphersuite: Ciphersuite,
-    key_package_counter: u64,
-    welcome_counter: u64,
-    key_packages: HashMap<String, KeyPackage>,
-    key_package_log: Vec<KeyPackage>,
+    welcome_counter: usize,
+    key_package_log: Vec<Option<KeyPackage>>,
     agent_ids: HashMap<String, usize>,
     group_ids: Vec<String>,
     openmls_values: OpenMlsKeyValueStore,
@@ -36,9 +34,7 @@ impl MySgmState {
             signature_key_pair,
             my_ciphersuite,
             mls_version,
-            key_package_counter: 0,
             welcome_counter: 0,
-            key_packages: HashMap::new(),
             key_package_log: Vec::new(),
             agent_ids: HashMap::new(),
             group_ids: Vec::new(),
@@ -60,9 +56,17 @@ impl MySgmState {
     pub fn openmls_values(&self) -> &OpenMlsKeyValueStore {
         &self.openmls_values
     }
-    pub fn set_key_package(&mut self, agent_id: &str, key_package: KeyPackage) {
-        let log_index = self.key_package_log.len();
-        self.key_package_log.push(key_package);
+    pub fn key_package_log(&self) -> &Vec<Option<KeyPackage>> {
+        &self.key_package_log
+    }
+    pub fn log_key_package(&mut self, key_package_opt: Option<KeyPackage>) -> usize {
+        self.key_package_log.push(key_package_opt);
+        self.key_package_log.len() - 1
+    }
+    pub fn get_key_package_log_index(&self, agent_id: &str) -> Option<usize> {
+        self.agent_ids.get(agent_id).copied()
+    }
+    pub fn set_key_package_log_index(&mut self, agent_id: &str, log_index: usize) {
         self.agent_ids.insert(agent_id.to_string(), log_index);
     }
     pub fn agent_ids(&self) -> Vec<String> {
@@ -73,6 +77,12 @@ impl MySgmState {
     }
     pub fn add_group_id(&mut self, group_id: String) {
         self.group_ids.push(group_id);
+    }
+    pub fn welcome_counter(&self) -> usize {
+        self.welcome_counter
+    }
+    pub fn increment_welcome_counter(&mut self) {
+        self.welcome_counter += 1;
     }
 }
 

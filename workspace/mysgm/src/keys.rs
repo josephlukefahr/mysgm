@@ -12,7 +12,6 @@ use openmls_traits::{
     types::{CryptoError, SignatureScheme},
 };
 use serde::{Deserialize, Serialize};
-use serde_with::{hex::Hex, serde_as};
 use tls_codec::{TlsDeserialize, TlsDeserializeBytes, TlsSerialize, TlsSize};
 
 /// A public signature key to be used instead of the default provided data structure.
