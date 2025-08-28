@@ -108,11 +108,11 @@ fn main() {
     let args = CliArgs::parse();
     log::info!("Command-line arguments: {args:?}");
     // dht adapter
-    //let adapter = OpenDhtRestAdapter::new("localhost", 8000);
-    //log::info!("OpenDHT REST adapter: {adapter:?}");
+    let adapter = OpenDhtRestAdapter::new("localhost", 8000);
+    log::info!("OpenDHT REST adapter: {adapter:?}");
     // file adapter
-    let adapter = FileAdapter::new("/tmp");
-    log::info!("File adapter: {adapter:?}");
+    //let adapter = FileAdapter::new("/tmp");
+    //log::info!("File adapter: {adapter:?}");
     // crypto
     let crypto: RustCrypto = Default::default();
     // state
