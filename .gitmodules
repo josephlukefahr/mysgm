@@ -1,6 +1,3 @@
-[submodule "opendht"]
-	path = workspace/opendht
-	url = https://github.com/josephlukefahr/opendht
 [submodule "openmls"]
-	path = workspace/openmls
+	path = openmls
 	url = https://github.com/josephlukefahr/openmls
