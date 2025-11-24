@@ -1,0 +1,54 @@
+Bootstrap: docker
+From: ubuntu:22.04
+Stage: build-cpp
+
+%environment
+	export DEBIAN_FRONTEND=noninteractive
+	export PATH=/usr/local/bin:$PATH
+	export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+
+%files
+	./norm /usr/local/src/norm
+    ./libzmq /usr/local/src/libzmq
+
+%post
+	# Update apt; minimal interactive defaults
+	apt-get update
+	apt-get install -y dialog apt-utils
+	echo 'debconf debconf/frontend select noninteractive' | debconf-set-selections
+	# Install build dependencies
+	apt-get install -y\
+		build-essential\
+        python3\
+        autoconf automake libtool pkg-config
+    # Clean apt cache
+    apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
+    # Install norm
+    cd /usr/local/src/norm
+    python3 waf configure\
+        && python3 waf install
+    # Install libzmq with norm support
+    cd /usr/local/src/libzmq
+    ./autogen.sh\
+        && ./configure --disable-Werror --with-norm\
+        && make\
+        && make install
+
+#####
+
+Bootstrap: docker
+From: rust:1.91
+Stage: build-rust
+
+%files from build-cpp
+    /usr/local/lib /usr
+
+%post
+	# Update apt; minimal interactive defaults
+	apt-get update
+	apt-get install -y dialog apt-utils
+	echo 'debconf debconf/frontend select noninteractive' | debconf-set-selections
+    # Clean apt cache
+    apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
+    # Update dynamic linkage cache
+    ldconfig

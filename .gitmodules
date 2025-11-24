@@ -1,3 +1,12 @@
 [submodule "openmls"]
 	path = openmls
 	url = https://github.com/josephlukefahr/openmls
+[submodule "rust-zmq"]
+	path = rust-zmq
+	url = https://github.com/josephlukefahr/rust-zmq
+[submodule "libzmq"]
+	path = libzmq
+	url = https://github.com/zeromq/libzmq.git
+[submodule "norm"]
+	path = norm
+	url = https://github.com/USNavalResearchLaboratory/norm.git
