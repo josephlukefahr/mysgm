@@ -1,7 +1,8 @@
 use super::provider::DiMlsProvider;
 use core::error::Error;
 use openmls::{
-    credentials::{BasicCredential, CredentialWithKey},
+    credentials::{BasicCredential, CredentialType, CredentialWithKey},
+    extensions::ExtensionType,
     framing::{
         ApplicationMessage, MlsMessageBodyIn, MlsMessageIn, MlsMessageOut, ProcessedMessage,
         ProtocolMessage, Sender,
@@ -12,6 +13,7 @@ use openmls::{
         Welcome,
         proposals::{PreSharedKeyProposal, Proposal},
     },
+    prelude::Capabilities,
     schedule::{ExternalPsk, PreSharedKeyId, Psk},
     treesync::LeafNodeParameters,
     versions::ProtocolVersion,
@@ -32,7 +34,11 @@ use openmls_traits::{OpenMlsProvider, types::Ciphersuite};
 pub fn cred_with_key(provider: &DiMlsProvider) -> CredentialWithKey {
     CredentialWithKey {
         credential: BasicCredential::new(Vec::new()).into(),
-        signature_key: provider.state().signature_key_pair().public_key_raw().into(),
+        signature_key: provider
+            .state()
+            .signature_key_pair()
+            .public_key_raw()
+            .into(),
     }
 }
 
@@ -74,6 +80,13 @@ pub fn gen_send_group(
                 &MlsGroupCreateConfig::builder()
                     .ciphersuite(ciphersuite)
                     .use_ratchet_tree_extension(true)
+                    .capabilities(Capabilities::new(
+                        None,
+                        None,
+                        Some(&[ExtensionType::LastResort]),
+                        None,
+                        Some(&[CredentialType::Basic]),
+                    ))
                     .build(),
                 cred_with_key(provider),
             )?;

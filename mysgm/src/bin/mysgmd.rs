@@ -94,7 +94,7 @@ fn main() {
                 // listen for message
                 match subscriber
                     .recv_msg(0)
-                    .and_then(|topic| subscriber.recv_msg(0).and_then(|data| Ok((topic, data))))
+                    .and_then(|topic| subscriber.recv_msg(0).map(|data| (topic, data)))
                 {
                     Err(e) => {
                         // log error and loop
@@ -102,13 +102,12 @@ fn main() {
                     }
                     Ok((topic, data)) => match topic.as_ref() {
                         t if t == commit_key_topic => {
-                            if let Some(data) = query_cache(data.as_ref(), &cache_dir) {
-                                if let Err(e) = publisher
+                            if let Some(data) = query_cache(data.as_ref(), &cache_dir)
+                                && let Err(e) = publisher
                                     .send(message_topic.as_slice(), zmq::SNDMORE)
                                     .and_then(|_| publisher.send(data, 0))
-                                {
-                                    log::error!("Error sending cached commit message: {e}");
-                                }
+                            {
+                                log::error!("Error sending cached commit message: {e}");
                             }
                         }
                         t if t == message_topic => {
