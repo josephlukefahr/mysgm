@@ -36,7 +36,7 @@ From: rust:1.91
 Stage: build-rust
 
 %files from build-cpp
-    /usr/local/lib /usr/local
+    /usr/local/lib /usr
 
 %files
     ./rust-zmq /usr/local/src/rust-zmq
@@ -55,7 +55,7 @@ Stage: build-rust
     ldconfig
     # Build & install mysgm
     cd /usr/local/src/mysgm
-    cargo install --path /usr/local/bin
+    cargo install --path . --root /usr/local
 
 #####
 
@@ -64,10 +64,10 @@ From: ubuntu:22.04
 Stage: final
 
 %files from build-cpp
-    /usr/local/lib /usr/local
+    /usr/local/lib /usr
 
 %files from build-rust
-    /usr/local/bin /usr/local
+    /usr/local/bin /usr
 
 %post
 	# Update apt; minimal interactive defaults

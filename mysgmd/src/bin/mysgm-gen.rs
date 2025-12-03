@@ -1,12 +1,11 @@
 use clap::Parser;
-use mysgm::dimls::{DiMlsState, SignatureKeyPair};
+use mysgm::dimls::{DiMlsProvider, DiMlsState, SignatureKeyPair, gen_send_group};
 use openmls_rust_crypto::RustCrypto;
 use openmls_traits::types::Ciphersuite;
 use serde_json::to_string as json_encode;
 use std::{
     env::home_dir,
-    fs::{File, create_dir_all},
-    io::Write,
+    fs::{create_dir_all, write as write_string_to_file},
 };
 
 /// CLI for secure group messsaging agent's state generation tool
@@ -39,11 +38,14 @@ fn main() {
     // signature key pair + state
     let state =
         DiMlsState::new(SignatureKeyPair::from_crypto(&crypto, ciphersuite.into()).unwrap());
+    log::info!("State: {state:?}");
+    // provider with new state
+    let mut provider = DiMlsProvider::new(state, crypto);
+    // generate send-group
+    let sg = gen_send_group(&mut provider, ciphersuite).unwrap();
+    log::info!("Generated send-group: {sg:?}");
     // save state
-    log::info!("State before saving: {:?}", &state);
-    let mut state_file = File::create_new(&state_path).unwrap();
-    state_file
-        .write_all(json_encode(&state).unwrap().as_bytes())
-        .unwrap();
+    log::info!("State before saving: {:?}", provider.state());
+    write_string_to_file(&state_path, json_encode(provider.state()).unwrap()).unwrap();
     // done!
 }

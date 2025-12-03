@@ -35,6 +35,8 @@ pub struct DiMlsState {
     #[serde_as(as = "Base64")]
     send_group_id: Vec<u8>,
     #[serde_as(as = "Vec<Base64>")]
+    other_group_ids: Vec<Vec<u8>>,
+    #[serde_as(as = "Vec<Base64>")]
     exporter_psk_queue: Vec<Vec<u8>>,
     signature_key_pair: SignatureKeyPair,
     /// The in-memory, thread-safe key-value store for all OpenMLS values.
@@ -47,6 +49,14 @@ impl core::fmt::Debug for DiMlsState {
             .field(
                 "send_group_id",
                 &Base64.encode(&self.send_group_id).to_string(),
+            )
+            .field(
+                "other_group_ids",
+                &self
+                    .other_group_ids
+                    .iter()
+                    .map(|v| Base64.encode(v).to_string())
+                    .collect::<Vec<String>>(),
             )
             .field(
                 "exporter_psk_queue",
@@ -83,6 +93,7 @@ impl DiMlsState {
         // done
         Self {
             exporter_psk_queue: Vec::new(),
+            other_group_ids: Vec::new(),
             send_group_id: Vec::new(),
             signature_key_pair,
             openmls_values: Default::default(),
@@ -108,6 +119,19 @@ impl DiMlsState {
         } else {
             Some(GroupId::from_slice(&self.send_group_id))
         }
+    }
+    pub fn add_other_group_id(&mut self, group_id: GroupId) {
+        self.other_group_ids.push(group_id.as_slice().to_vec());
+    }
+    pub fn remove_other_group_id(&mut self, group_id: &GroupId) {
+        self.other_group_ids
+            .retain(|gid_bytes| GroupId::from_slice(gid_bytes) != *group_id);
+    }
+    pub fn other_group_ids(&self) -> Vec<GroupId> {
+        self.other_group_ids
+            .iter()
+            .map(|gid_bytes| GroupId::from_slice(gid_bytes))
+            .collect()
     }
     /// Push an exporter PSK identifier onto the local queue.
     ///
