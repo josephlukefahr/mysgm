@@ -140,8 +140,9 @@ fn main() {
     log::info!("Path to agent state: {}", state_path.display());
     // crypto
     let crypto: RustCrypto = Default::default();
-    // ciphersuite
+    // parameters
     let ciphersuite = Ciphersuite::MLS_128_DHKEMX25519_CHACHA20POLY1305_SHA256_Ed25519;
+    let exporter_length = 32usize;
     // agent state
     let state: DiMlsState = json_decode(&read_to_string(&state_path).unwrap()).unwrap();
     log::info!("Loaded state: {state:?}");
@@ -208,7 +209,7 @@ fn main() {
             let commit_uuid =
                 Uuid::from_slice(&send_group_commit_key(&provider, 16).unwrap()).unwrap();
             // update
-            let commit = force_self_update(&mut provider, ciphersuite, 32).unwrap();
+            let commit = force_self_update(&mut provider, ciphersuite, exporter_length).unwrap();
             log::info!("Commit ({commit_uuid}): {commit:#?}");
             // save tls-encoded commit message to file with uuid as filename
             let mut commit_file =
@@ -250,7 +251,7 @@ fn main() {
                             &mut provider,
                             Ok(Base64.encode(read(entry.path()).unwrap())),
                             ciphersuite,
-                            32,
+                            exporter_length,
                         ) {
                             Err(e) => {
                                 log::error!(
@@ -299,7 +300,8 @@ fn main() {
                             File::create_new(outbox_dir.join(message_uuid.to_string())).unwrap();
                         message_file
                             .write_all(
-                                &create_message(&provider, &plaintext).unwrap()
+                                &create_message(&provider, &plaintext)
+                                    .unwrap()
                                     .tls_serialize_detached()
                                     .unwrap(),
                             )
